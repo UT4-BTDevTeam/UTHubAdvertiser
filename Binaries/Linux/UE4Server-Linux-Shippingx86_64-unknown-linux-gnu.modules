@@ -1,0 +1,8 @@
+{
+	"Changelist" : 3525109,
+	"BuildId" : "7e40bb16-6b0a-4d2c-bfbe-c42f1feed51b",
+	"Modules" : 
+	{
+		"UTHubAdvertiser" : "libUE4Server-UTHubAdvertiser-Linux-Shipping.so"
+	}
+}
