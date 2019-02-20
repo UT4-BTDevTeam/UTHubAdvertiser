@@ -85,9 +85,12 @@ void AUTHubAdvertiser::MyJsonReport(TSharedPtr<FJsonObject> Result)
 	if (!GM || !GS)
 		return;
 
+	// Schema version
+	Result->SetNumberField(TEXT("__v"), 2);
+
 	// Hub
 	Result->SetStringField(TEXT("ServerName"), GS->ServerName);
-	Result->SetStringField(TEXT("ServerMOTD"), GS->ServerMOTD);
+	//Result->SetStringField(TEXT("ServerMOTD"), GS->ServerMOTD);	//bulky
 	Result->SetNumberField(TEXT("ElapsedTime"), GS->ElapsedTime);
 	Result->SetNumberField(TEXT("TimeUntilRestart"), ((GM->ServerRefreshCheckpoint * 60 * 60) - GetWorld()->GetTimeSeconds()));
 
@@ -103,9 +106,12 @@ void AUTHubAdvertiser::MyJsonReport(TSharedPtr<FJsonObject> Result)
 			AUTPlayerState* UTPS = Cast<AUTPlayerState>(PS);
 			if (IsValid(UTPS))
 			{
-				TSharedPtr<FJsonObject> PJson = MakeShareable(new FJsonObject);
-				UTPS->MakeJsonReport(PJson);
-				PlayersJson.Add(MakeShareable(new FJsonValueObject(PJson)));
+				TSharedPtr<FJsonObject> PlayerJson = MakeShareable(new FJsonObject);
+
+				PlayerJson->SetStringField(TEXT("PlayerName"), UTPS->PlayerName);
+				PlayerJson->SetStringField(TEXT("UniqueId"), UTPS->UniqueId.ToString());
+
+				PlayersJson.Add(MakeShareable(new FJsonValueObject(PlayerJson)));
 			}
 		}
 		Result->SetArrayField(TEXT("Players"), PlayersJson);
@@ -218,6 +224,8 @@ void AUTHubAdvertiser::MyJsonReport(TSharedPtr<FJsonObject> Result)
 			TeamScoresJson.Add(MakeShareable(new FJsonValueNumber(TeamScore)));
 		}
 		InstanceJson->SetArrayField(TEXT("TeamScores"), TeamScoresJson);
+		InstanceJson->SetBoolField(TEXT("bMatchHasBegun"), Instance->MatchData.bMatchHasBegun);
+		InstanceJson->SetBoolField(TEXT("bMatchHasEnded"), Instance->MatchData.bMatchHasEnded);
 
 		// Players
 		TArray<TSharedPtr<FJsonValue>> PlayersJson;
@@ -244,6 +252,8 @@ void AUTHubAdvertiser::MyJsonReport(TSharedPtr<FJsonObject> Result)
 				InstanceJson->SetNumberField(TEXT("ProcessId"), MatchInfo->GameInstanceProcessHandle.IsValid() ? (int32)MatchInfo->GameInstanceProcessHandle.GetProcessInfo()->GetProcessId() : -1);
 #endif
 				InstanceJson->SetNumberField(TEXT("InstanceLaunchTime"), MatchInfo->InstanceLaunchTime);
+				InstanceJson->SetStringField(TEXT("OwnerId"), MatchInfo->OwnerId.ToString());
+				InstanceJson->SetStringField(TEXT("MatchState"), MatchInfo->MatchUpdate.MatchState.ToString());
 				break;
 			}
 		}
